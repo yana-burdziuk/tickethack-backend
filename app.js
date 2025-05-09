@@ -5,11 +5,10 @@ const logger = require('morgan');
 const cors = require('cors');
 
 // Fichier qui connecte à la base de données MongoDB
-require('./connection');
+require('./models/connection');
 
 // Import des routes
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');    // Routes pour créer ou connecter un utilisateur
+const bookingsRouter = require('./routes/bookings');
 const tripsRouter = require('./routes/trips');    // Routes pour chercher les trajets
 const cartRouter = require('./routes/cart');      // Routes pour ajouter/supprimer des trajets dans le panier
 
@@ -32,8 +31,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Ici on définit les différentes "parties" de l’appli accessibles via des URL spécifiques
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/bookings', bookingsRouter);
+//app.use('/users', usersRouter);
 app.use('/trips', tripsRouter);
 app.use('/cart', cartRouter);
 

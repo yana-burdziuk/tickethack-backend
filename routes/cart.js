@@ -1,58 +1,47 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Cart = require('../models/Cart');
-const Trip = require('../models/Trips');
+const Cart = require("../models/Cart");
+const Trip = require("../models/Trips");
 
-// POST /cart — Ajouter un trajet au panier d’un utilisateur
-router.post('/', (req, res) => {
-  const { userId, tripId } = req.body;
+// POST /cart - ajouter le trajet trouvé dans le panier
+router.post("/", (req, res) => {
+  const { tripId } = req.body;
 
-  if (!userId || !tripId) {
-    return res.json({ result: false, error: 'Champs manquants' });
+  if (!tripId) {
+    return res.json({ result: false, error: "No trip ID found" });
   }
 
-  Trip.findById(tripId).then(trip => {
+  Trip.findById(tripId).then((trip) => {
     if (!trip) {
-      return res.json({ result: false, error: 'Trajet non trouvé' });
+      return res.json({ result: false, error: "No trip found" });
     }
 
-    const newCartItem = new Cart({ user: userId, trip: tripId });
+    const newCartItem = new Cart({ trip: tripId });
 
-    newCartItem.save().then(savedItem => {
+    newCartItem.save().then((savedItem) => {
       res.json({ result: true, cartItem: savedItem });
-    }).catch(err => {
-      res.json({ result: false, error: 'Erreur lors de la sauvegarde du panier' });
     });
-  }).catch(err => {
-    res.json({ result: false, error: 'Erreur lors de la recherche du trajet' });
   });
 });
 
-// GET /cart/:userId — Voir tous les trajets dans le panier d’un utilisateur
-router.get('/:userId', (req, res) => {
-  Cart.find({ user: req.params.userId })
-    .populate('trip')
-    .then(cartItems => {
+// GET /cart — voir tous les trajets dans le panier
+router.get("/", (req, res) => {
+  Cart.find()
+    .populate("trip")
+    .then((cartItems) => {
       res.json({ result: true, cart: cartItems });
-    })
-    .catch(err => {
-      res.json({ result: false, error: 'Erreur lors de la récupération du panier' });
     });
 });
 
-// DELETE /cart/:userId/:tripId — Supprimer un trajet du panier
-router.delete('/:userId/:tripId', (req, res) => {
-  Cart.findOneAndDelete({ user: req.params.userId, trip: req.params.tripId })
-    .then(deleted => {
-      if (deleted) {
-        res.json({ result: true });
-      } else {
-        res.json({ result: false, error: 'Élément non trouvé dans le panier' });
-      }
-    })
-    .catch(err => {
-      res.json({ result: false, error: 'Erreur lors de la suppression' });
-    });
+// DELETE /cart/:tripId — supprimer un trajet dans le panier
+router.delete("/:tripId", (req, res) => {
+  Cart.findOneAndDelete({ trip: req.params.tripId }).then((deleted) => {
+    if (deleted) {
+      res.json({ result: true, text: "Trip deleted" });
+    } else {
+      res.json({ result: false, error: "Trip does not exist" });
+    }
+  });
 });
 
 module.exports = router;
